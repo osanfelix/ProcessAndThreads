@@ -4,6 +4,11 @@
  * and open the template in the editor.
  */
 package ProcessAndThreads;
+
+import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  *
  * @author Oscar
@@ -21,5 +26,28 @@ public class MainApp
 		// Ejecutar comandos mediante clase "ProcessBuilder":
 		ProcessTest.ExecuteProcess("cmd", "/c", "dir");
 		//~ProcessTest.ExecuteProcessOutputToFile("C:\\Users\\Oscar\\Desktop\\out.txt","C:\\Users\\Oscar\\Desktop\\err.txt", "cmd", "/c", "dir");
+		
+		/*
+		try
+		{
+			// Schedule generic
+			Schedule.testThreadPoolExecutor();
+			
+			// Timed Schedule
+			Schedule.testScheduledThreadPoolExecutor();
+		}
+		catch (InterruptedException ex)
+		{
+			ex.printStackTrace();
+		}
+		catch (ExecutionException ex)
+		{
+			ex.printStackTrace();
+		}
+		
+		// Fork - Join example
+		ForkJoinExampleFindMaxShort.test();
+		*/
+		
 	}
 }

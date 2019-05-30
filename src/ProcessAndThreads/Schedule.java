@@ -29,36 +29,40 @@ class Multiplicacio implements Callable<Integer>
     }
 }
 
-    // Fil Runnable
-    class ExecutaFil implements Runnable
-    {
-        @Override
-        public void run() {
-            Calendar calendario = new GregorianCalendar();
-            System.out.println("Hora execució tasca: "+ calendario.get(Calendar.HOUR_OF_DAY) + ":" + calendario.get(Calendar.MINUTE) + ":" + calendario.get(Calendar.SECOND));
-            System.out.println("Tasca en execució");
-            System.out.println("Execució acabada");
-        }
+// Fil Runnable
+class ExecutaFil implements Runnable
+{
+    @Override
+    public void run() {
+        Calendar calendario = new GregorianCalendar();
+        System.out.println("Hora execució tasca: "+ calendario.get(Calendar.HOUR_OF_DAY) + ":" + calendario.get(Calendar.MINUTE) + ":" + calendario.get(Calendar.SECOND));
+        System.out.println("Tasca en execució");
+        System.out.println("Execució acabada");
     }
+}
 
 public class Schedule
 {
     public static void testThreadPoolExecutor() throws InterruptedException, ExecutionException
     {
-        // Task Schedule
-        ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(3);
+        // Task Schedule: 3 hilos fijos
+        ThreadPoolExecutor executorFixed = (ThreadPoolExecutor) Executors.newFixedThreadPool(3);
+        // Task Schedule: Hilos dinámicos (los crea a medida que se necesitan)
+        ThreadPoolExecutor executorCached = (ThreadPoolExecutor) Executors.newCachedThreadPool();
+        // Task Schedule: Sólo un hilo
+        ThreadPoolExecutor executorSingle = (ThreadPoolExecutor) Executors.newSingleThreadExecutor();
         
         // Task array
-        List<Multiplicacio> llistaTasques = new ArrayList<Multiplicacio>();
+        List<Multiplicacio> llistaTasques = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
             Multiplicacio calcula = new Multiplicacio((int) (Math.random() * 10), (int) (Math.random() * 10));
             llistaTasques.add(calcula);
         }
         
         List<Future<Integer>> llistaResultats;
-        llistaResultats = executor.invokeAll(llistaTasques);
+        llistaResultats = executorFixed.invokeAll(llistaTasques);
 
-        executor.shutdown();
+        executorFixed.shutdown();
         for (int i = 0; i < llistaResultats.size(); i++) {
             Future<Integer> resultat = llistaResultats.get(i);
             try {

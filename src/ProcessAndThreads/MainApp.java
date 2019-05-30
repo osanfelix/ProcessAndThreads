@@ -57,6 +57,11 @@ public class MainApp
 		*/
 	}
 	
+        public static void TestSchedule()
+	{
+            
+        }
+        
 	public static void TestThread()
 	{
 		// Test Threads

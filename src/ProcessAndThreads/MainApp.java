@@ -17,7 +17,7 @@ import java.util.logging.Logger;
 
 public class MainApp
 {
-	public static void main(String[] args) throws InterruptedException{
+	public static void main(String[] args){
 		
 		// Ejecutar comandos mediante clase "Runtime":
 		// Prova "notepad", "cmd /c dir", "comanda que no existeix" 
@@ -27,40 +27,38 @@ public class MainApp
 		ProcessTest.ExecuteProcess("cmd", "/c", "dir");
 		//~ProcessTest.ExecuteProcessOutputToFile("C:\\Users\\Oscar\\Desktop\\out.txt","C:\\Users\\Oscar\\Desktop\\err.txt", "cmd", "/c", "dir");
 		
-		/*
-		try
-		{
-			// Schedule generic
-			Schedule.testThreadPoolExecutor();
-			
-			// Timed Schedule
-			Schedule.testScheduledThreadPoolExecutor();
-		}
-		catch (InterruptedException ex)
-		{
-			ex.printStackTrace();
-		}
-		catch (ExecutionException ex)
-		{
-			ex.printStackTrace();
-		}
+		TestSchedulePool();
 		
 		// Fork - Join example
-		ForkJoinExampleFindMaxShort.test();
-		*/
+//		ForkJoinExampleFindMaxShort.test();
+		// Thread example
+//		TestThread();
+//		TestRunnable();
+		
+		
+		// Fork - Join example
+//		ForkJoinExampleFindMaxShort.test();
+		
 		
 		
 		// Thread example
-		/*
-		TestThread();
-		TestRunnable();
-		*/
+		
+//		TestThread();
+//		TestRunnable();
+		
 	}
 	
-        public static void TestSchedule()
+    public static void TestSchedulePool()
 	{
-            
-        }
+        try {
+			// Schedule generic
+//			Schedule.testThreadPoolExecutor();
+			
+			// Timed Schedule
+			Schedule.testScheduledThreadPoolExecutor();
+		} catch (InterruptedException | ExecutionException ex) {
+			ex.printStackTrace();} 
+    }
         
 	public static void TestThread()
 	{
@@ -73,6 +71,7 @@ public class MainApp
 
 		try {
 			t1.join();
+		
 			t2.join();
 		}
 		catch (InterruptedException ex)

@@ -1,12 +1,24 @@
 package ProcessAndThreads;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinTask;
+
+// Classe ForkJoinPool <== RecursiveTask o RecursiveAction (abstractes)
+// Aquesta combinació es fa servir quan es necessiten fils molt lleugers
+// per atacar tasques grans que es poden dividir en més petites.
+// Al mètode compute() és defineix la tasca en qüestió.
+
+// Executa tasques de tipus ForkJoinTask<V>:
+//	- RecursiveTask<V>	(returns a value type V; extends ForkJoinTask<V>)
+//	- RecursiveAction   (returns no value; extends ForkJoinTask<Void>)
 
 // Tarea a realizar: Buscar el entero más grande de un array:
 public class ForkJoinExampleFindMaxShort extends RecursiveTask<Short> 
 {
-    private static final int ARRAY_MIN_SIZE = 10000000;
+    private static final int ARRAY_MIN_SIZE = 100000;
 	private static int taskCount = 0;
 	
     private short[] arr ;
@@ -44,6 +56,8 @@ public class ForkJoinExampleFindMaxShort extends RecursiveTask<Short>
         return (short) Math.max(task1.join(), task2.join());
 		
     }
+	
+	
     
     @Override
     protected Short compute()
@@ -51,18 +65,27 @@ public class ForkJoinExampleFindMaxShort extends RecursiveTask<Short>
         if(fi - inici <= ARRAY_MIN_SIZE){
             return getMaxSeq();
         }else{
-            return getMaxReq();
+			return (short)ForkJoinTask.invokeAll(getMaxReqList()).stream().mapToInt(ForkJoinTask::join).sum();
+//            return getMaxReq();
         }            
     }
-
-	
+private List<ForkJoinExampleFindMaxShort> getMaxReqList()
+	{
+        taskCount++;
+		ForkJoinExampleFindMaxShort task1;
+        ForkJoinExampleFindMaxShort task2;
+        int mig = (inici+fi)/2+1;
+        task1 = new ForkJoinExampleFindMaxShort(arr, inici, mig);
+        task2 = new ForkJoinExampleFindMaxShort(arr, mig, fi);
+        
+        return new ArrayList<ForkJoinExampleFindMaxShort>(){{add(task1); add(task2);}};
+		
+    }
 	
 	// Test Methods
     public static void test(){
-
 		taskCount = 1;
-        short[] data = createArray(100000000);
-
+        short[] data = createArray(200000000);
         // Mira el número de processadors
         System.out.println("Inici càlcul");
         ForkJoinPool pool = new ForkJoinPool();
@@ -76,10 +99,8 @@ public class ForkJoinExampleFindMaxShort extends RecursiveTask<Short>
         long time = System.currentTimeMillis();
 		
         // crida la tasca i espera que es completin
-		int result1 = pool.invoke(tasca);
+		int result = pool.invoke(tasca);
 		
-        // comença!! 
-        int result=  tasca.join();
         
 		System.out.println("Temps utilitzat:" +(System.currentTimeMillis()-time));
         

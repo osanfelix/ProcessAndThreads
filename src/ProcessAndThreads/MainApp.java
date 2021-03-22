@@ -17,17 +17,22 @@ import java.util.logging.Logger;
 
 public class MainApp
 {
-	public static void main(String[] args){
+	public static void main(String[] args)
+	{
+		// Get name of the current thread: 'main'
+//		System.out.println("Main thread name: " + Thread.currentThread().getName());
 		
 		// Ejecutar comandos mediante clase "Runtime":
 		// Prova "notepad", "cmd /c dir", "comanda que no existeix" 
 		ProcessTest.ExecuteCommand("cmd /c dir");
 		
 		// Ejecutar comandos mediante clase "ProcessBuilder":
-		ProcessTest.ExecuteProcess("cmd", "/c", "dir");
+//		ProcessTest.ExecuteProcess("cmd", "/c", "dir");
 		//~ProcessTest.ExecuteProcessOutputToFile("C:\\Users\\Oscar\\Desktop\\out.txt","C:\\Users\\Oscar\\Desktop\\err.txt", "cmd", "/c", "dir");
 		
-		TestSchedulePool();
+		
+
+//		TestSchedulePool();
 		
 		// Fork - Join example
 //		ForkJoinExampleFindMaxShort.test();
@@ -39,23 +44,36 @@ public class MainApp
 		// Fork - Join example
 //		ForkJoinExampleFindMaxShort.test();
 		
-		
-		
-		// Thread example
-		
-//		TestThread();
-//		TestRunnable();
+
 		
 	}
 	
     public static void TestSchedulePool()
 	{
         try {
-			// Schedule generic
-//			Schedule.testThreadPoolExecutor();
+			// Executor: single thread
+			System.out.println("######### Executant tasca de multiplicació amb executor (single thread) #######");
+			ExecutorExamples.testThreadExecutor();
 			
-			// Timed Schedule
-			Schedule.testScheduledThreadPoolExecutor();
+			// Executor 3 threads
+			System.out.println("######### Executant tasca de multiplicació amb executor (3 fixed thread) #######");
+			ExecutorExamples.testThreadPoolExecutor(ExecutorExamples.POOL_TYPE.FIXED3);
+			
+			// Executor cache thread
+			System.out.println("######### Executant tasca de multiplicació amb executor (dynamic num. threads) #######");
+			ExecutorExamples.testThreadPoolExecutor(ExecutorExamples.POOL_TYPE.CACHED);
+			
+			// Schedule generic
+			System.out.println("######### Executant tasca runnable (1 segon) amb schedule executor (single) #######");
+			ExecutorExamples.testScheduledThreadPoolExecutor(ExecutorExamples.SCHEDULE_TYPE.SINGLE);
+			// Schedule delay
+			System.out.println("######### Executant tasca runnable (1 segon) amb schedule executor (fixed delay) #######");
+			ExecutorExamples.testScheduledThreadPoolExecutor(ExecutorExamples.SCHEDULE_TYPE.DELAY);
+			
+			// Schedule rate (parece que el tiempo de la tarea se suma al periodo y no debería ser asi!!)
+			System.out.println("######### Executant tasca runnable (1 segon) amb schedule executor (fixed rate) #######");
+			ExecutorExamples.testScheduledThreadPoolExecutor(ExecutorExamples.SCHEDULE_TYPE.DELAY);
+
 		} catch (InterruptedException | ExecutionException ex) {
 			ex.printStackTrace();} 
     }

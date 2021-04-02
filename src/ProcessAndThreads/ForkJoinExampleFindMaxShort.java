@@ -21,8 +21,8 @@ public class ForkJoinExampleFindMaxShort extends RecursiveTask<Short>
     private static final int ARRAY_MIN_SIZE = 100000;
 	private static int taskCount = 0;
 	
-    private short[] arr ;
-    private int inici, fi;
+    final private short[] arr ;
+    final private int inici, fi;
 
     public ForkJoinExampleFindMaxShort(short[] arr, int inici, int fi) {
             this.arr = arr;
@@ -65,7 +65,7 @@ public class ForkJoinExampleFindMaxShort extends RecursiveTask<Short>
         if(fi - inici <= ARRAY_MIN_SIZE){
             return getMaxSeq();
         }else{
-			return (short)ForkJoinTask.invokeAll(getMaxReqList()).stream().mapToInt(ForkJoinTask::join).sum();
+			return (short)ForkJoinTask.invokeAll(getMaxReqList()).stream().mapToInt(ForkJoinTask::join).max().getAsInt();
 //            return getMaxReq();
         }            
     }
@@ -113,7 +113,7 @@ private List<ForkJoinExampleFindMaxShort> getMaxReqList()
         short[] ret = new short[size];
         for(int i=0; i<size; i++){
             ret[i] = (short) (1000 * Math.random());
-            if(i==((short)(size*0.9))){
+            if(i==(size*0.9)){
                 ret[i]=1005;
             }
         }

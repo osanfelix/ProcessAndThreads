@@ -5,6 +5,7 @@
  */
 package ProcessAndThreads;
 
+import static java.lang.Thread.sleep;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -24,7 +25,7 @@ public class MainApp
 		
 		// Ejecutar comandos mediante clase "Runtime":
 		// Prova "notepad", "cmd /c dir", "comanda que no existeix" 
-		ProcessTest.ExecuteCommand("cmd /c dir");
+//		ProcessTest.ExecuteCommand("cmd /c dir");
 		
 		// Ejecutar comandos mediante clase "ProcessBuilder":
 //		ProcessTest.ExecuteProcess("cmd", "/c", "dir");
@@ -40,12 +41,11 @@ public class MainApp
 //		TestThread();
 //		TestRunnable();
 		
+		// Syncronimous exemples
 		
-		// Fork - Join example
-//		ForkJoinExampleFindMaxShort.test();
-		
-
-		
+				
+		ThreadSynchronicityExamples.threadsFoundZerosOnArray();
+	
 	}
 	
     public static void TestSchedulePool()
@@ -80,21 +80,57 @@ public class MainApp
         
 	public static void TestThread()
 	{
-		// Test Threads
+		// Using an extended Thread class
 		ThreadClass t1 = new ThreadClass("Fil 1");
 		ThreadClass t2 = new ThreadClass("Fil 2");
 		
+		// Using anonymous runnable
+		Thread t3 = new Thread( new Runnable(){
+			
+			@Override
+			public void run()
+			{
+				for(int i = 0; i < 5; i++)
+				{
+					System.out.println("Fil 3" + ": i = " + i);
+					try {
+						sleep(500);
+					} catch (InterruptedException ex) {
+						System.out.println("Interromput");
+					}
+				}
+			}
+		});
+		
+		// Using lambda expression
+		Thread t4 = new Thread( () -> {
+			for(int i = 0; i < 5; i++)
+			{
+				System.out.println("Fil 4" + ": i = " + i);
+				try {
+					sleep(500);
+				} catch (InterruptedException ex) {
+					System.out.println("Interromput");
+				}
+			}
+		});
+		
+		// Start the threads
 		t1.start();
 		t2.start();
+		t3.start();
+		t4.start();
 
+		// Wait until all threads finish their work
 		try {
 			t1.join();
-		
 			t2.join();
+			t3.join();
+			t4.join();
 		}
 		catch (InterruptedException ex)
 		{
-				System.out.println("Interrumpit");
+				System.out.println("Interromput");
 		}
 		
 		System.out.println("Fi de TestThread() ");
@@ -124,7 +160,7 @@ public class MainApp
 		}
 		catch (InterruptedException ex)
 		{
-				System.out.println("Interrumpit");
+				System.out.println("Interromput");
 		}
 		
 		System.out.println("Fi de TestRunnable()");

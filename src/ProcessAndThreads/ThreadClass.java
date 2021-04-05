@@ -1,3 +1,4 @@
+// Exemple of custom thread. Only sleeps half second
 package ProcessAndThreads;
 
 public class ThreadClass extends Thread
@@ -9,6 +10,7 @@ public class ThreadClass extends Thread
 		this.name = name;
 	}
 	
+	@Override
 	public void run()
 	{
 		for(int i = 0; i < 5; i++)
@@ -17,7 +19,7 @@ public class ThreadClass extends Thread
 			try {
 				sleep(500);
 			} catch (InterruptedException ex) {
-				System.out.println("Interrumpit");
+				System.out.println("Interromput");
 			}
 		}
 	}

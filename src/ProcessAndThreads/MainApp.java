@@ -41,11 +41,14 @@ public class MainApp
 //		TestThread();
 //		TestRunnable();
 		
-		// Syncronimous exemples
+		// Synchronized exemples				
+//		ThreadSynchronicityExamples.threadsFoundZerosOnArray();		// To modify shared vrible by serveral threads
 		
-				
-		ThreadSynchronicityExamples.threadsFoundZerosOnArray();
-	
+//		WaitNotifyExample.test();
+		
+		// Sorting
+		BubbleSort.test();
+		
 	}
 	
     public static void TestSchedulePool()

@@ -65,8 +65,8 @@ public class ForkJoinExampleFindMaxShort extends RecursiveTask<Short>
         if(fi - inici <= ARRAY_MIN_SIZE){
             return getMaxSeq();
         }else{
-			return (short)ForkJoinTask.invokeAll(getMaxReqList()).stream().mapToInt(ForkJoinTask::join).max().getAsInt();
-//            return getMaxReq();
+//			return (short)ForkJoinTask.invokeAll(getMaxReqList()).stream().mapToInt(ForkJoinTask::join).max().getAsInt();
+            return getMaxReq();
         }            
     }
 private List<ForkJoinExampleFindMaxShort> getMaxReqList()

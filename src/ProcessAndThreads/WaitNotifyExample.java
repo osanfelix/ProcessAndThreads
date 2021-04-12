@@ -1,14 +1,7 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package ProcessAndThreads;
 
-/**
- *
- * @author Ofelia
- */
+
 public class WaitNotifyExample
 {
     
@@ -26,7 +19,7 @@ class E_Hola implements Runnable {
         this.eh = eh;
         new Thread(this, "Hola").start();
     }
-
+	@Override
     public void run() {
         try{
             for(int x=0;x<5;x++) {
@@ -43,6 +36,8 @@ class E_Adeu implements Runnable {
         this.eh = eh;
         new Thread(this, "Adéu").start();
     }
+	
+	@Override
     public void run() {
         for(int x=0;x<5;x++) {
             eh.eAdeu();

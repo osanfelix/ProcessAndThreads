@@ -2,10 +2,6 @@ package ProcessAndThreads;
 // Modificadors:
 // 'synchronized'  => Per mètodes i blocs
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 // 'volatile' per membres d'una clase.
 

@@ -9,137 +9,298 @@
 
 package ProcessAndThreads;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+class ArrayToSort
+{
+	public int[] arr;
+	int len;
+	
+	// Threading vars
+	static volatile boolean finish_middle_forward = false;
+	static volatile boolean finish_middle_reverse = false;
+	static volatile boolean finish_forward = false;
+	static volatile boolean finish_reverse = false;
+
+	public void resetMiddleForward()
+	{
+		finish_middle_forward = false;
+	}
+	
+	public void resetMiddleReverse()
+	{
+		finish_middle_reverse = false;
+	}
+	
+	public void resetFinalForward()
+	{
+		finish_forward = false;
+	}
+	
+	public void resetFinalReverse()
+	{
+		finish_reverse = false;
+	}
+	
+	public ArrayToSort(int[] arr)
+	{
+		this.arr = arr;
+		len = this.arr.length;
+	}
+	
+	public int getValue(int index)
+	{
+		return arr[index];
+	}
+	
+	public int getLength()
+	{
+		return len;
+	}
+	
+	public synchronized void enterCriticalMiddleZone(boolean forward)throws InterruptedException
+	{
+		if(forward)
+		{
+			System.out.println("FORWARD MIDDLE ENTERING...");
+			if (!finish_middle_reverse)
+			{
+				System.out.println("DUERME FORWARD...");wait();
+				System.out.println("DESPIERTA FORWARD...");
+			}
+			
+		}
+		else
+		{
+			System.out.println("RESERVE MIDDLE ENTERING...");
+			finish_middle_reverse = true;
+			notify();
+			if (!finish_middle_forward)
+			{
+				System.out.println("DUERME REVERSE...");wait();	// Siempre entrará
+				System.out.println("DESPIERTA REVERSE...");
+			}
+			else
+			{
+				notify();
+			}
+		}
+	}
+	
+	public synchronized void enterCriticalFinalZone(boolean forward)throws InterruptedException
+	{
+		if(forward)
+		{
+			System.out.println("FORWARD FINAL ENTERING...");
+			finish_forward = true;
+			if (!finish_reverse)
+			{
+				System.out.println("DUERME FORWARD FINAL...");wait();
+			}
+			else
+			{
+				notify();
+			}
+		}
+		else
+		{
+			System.out.println("REVERSE FINAL ENTERING...");
+			finish_reverse = true;
+			if (!finish_forward)
+			{
+				System.out.println("DUERME REVERSE FINAL...");wait();	
+			}
+			else
+			{
+				notify();
+			}
+		}
+	}
+	
+	public synchronized void exitCriticalZone() throws InterruptedException	// only forward
+	{
+		if (!finish_middle_reverse)
+		{
+			System.out.println("NEVER ENTERING HERE...");
+		}
+		finish_middle_forward = true;
+		notify();
+	}
+	
+	public void swapPair(int i, int j)	// Swap element 'i' and 'j'
+	{
+		// swap
+		int temp = arr[i];
+		arr[i] = arr[j];
+		arr[j] = temp;
+		
+		// Half part of the array: critical place
+	}
+	
+	public void print()
+	{
+		System.out.print("\n[");
+		for (int i = 0; i < arr.length - 1; ++i)
+		{
+			System.out.print(arr[i] + ",");
+		}
+		System.out.print(arr[arr.length - 1]);
+		System.out.print("]\n");
+//		System.out.println("Iterations: " + iterations + " (" + swapes + " swapes)");
+	}
+}
+
 public class BubbleSort extends Thread
 {
 	enum directionType {FORWARD, REVERSE};	// FORWARD ->     <- REVERSE
 	
-	int[] arr = null;
+	// INPUT
+	ArrayToSort array = null;
+	
+	directionType dir;
+	
+	//  VARS
 	int[] originalArray = null;
 	int[] sortedArray = null;
-	directionType dir;
+	
+	// TEMP VARS
 	int iterations = 0;
 	int swapes = 0;
 	
-	// Threading vars
-	static volatile boolean finish_A = false;
-	static volatile boolean finish_B = false;
-	
-	void setArray()
-	{
 		
+	void setArray(ArrayToSort array)
+	{
+		this.array = array;
 	}
 	
-	BubbleSort(int arr[], directionType dir)
+	// Constructor
+	BubbleSort(ArrayToSort array, directionType dir)
 	{
 		super();
-		this.arr = arr;
+		this.array = array;
 		this.dir = dir;
 	}
 	
-	void bubbleSort()
+	void forwardSort() throws InterruptedException
     {
 		iterations = 0; swapes = 0;
-		// Save unsorted array
-		originalArray = new int[arr.length];
-		System.arraycopy(arr, 0, originalArray, 0, arr.length);
 		
 		// Sorting ...
-		int len = arr.length;
+		int len = array.getLength();
+		
+		int init = 0;
+		int end = len -1;
 		boolean swap = false;
 		do
 		{
 			swap = false;
-			for(int i = 0; i < len - 1; ++i)
+			
+			for(int i = init; i < end; ++i)
 			{
-				if( arr[i] > arr[i+1] )
+				// CASO PAR
+				// Stop if get to the half
+//				if(i == len/2 -1)
+//				{
+//					array.enterCriticalMiddleZone(true);		// on enter, wait()
+//				}
+				
+				if( array.getValue(i) > array.getValue(i+1) )
 				{
+					
 					// swap
-					int temp = arr[i];
-					arr[i] = arr[i + 1];
-					arr[i + 1] = temp;
+					array.swapPair(i, i+1);
 					swap = true;
 					++swapes;
 				}
+				
+//				if(i == len/2 -1)
+//				{
+//					array.exitCriticalZone();		// on exit, notify()
+//					array.resetMiddleForward();
+//				}
 			}
-			--len;		// for each pass, last number is sortered [,,max->,,]
+			
+//			if(swap) array.enterCriticalFinalZone(true);
+//			array.resetFinalForward();
+			
+			--end;
+//			++init;		// for each pass, last number is sortered [,,max->,,]
+			
 			++iterations;
+			
 		}while(swap == true);
-		
-		// Save sorted array
-		sortedArray = new int[arr.length];
-		System.arraycopy(arr, 0, sortedArray, 0, arr.length);
+		System.out.println("Iter forward: " + (iterations));
+		System.out.println("Swapes forward: " + (swapes ));
 	}
 	
-	void bubbleSortRev(int arr[])
+	void reverseSort() throws InterruptedException
     {
 		iterations = 0; swapes = 0;
-		// Save unsorted array
-		originalArray = new int[arr.length];
-		System.arraycopy(arr, 0, originalArray, 0, arr.length);
 		
 		// Sorting ...
-		int len = arr.length;
+		int len = array.getLength();
+		
+		int init = len - 1;
+		int end = 0;
+		
 		boolean swap = false;
 		do
 		{
-			int init = 0;
 			swap = false;
-			for(int i = init; i < len - 1; ++i)
+			
+			for(int i = init; i > end; --i)
 			{
-				if( arr[len - 1 - i] < arr[len - 2 - i] )
+				// CASO PAR
+				// Stop if get to the half
+//				if(i == len/2 -1)
+//				{
+//					array.enterCriticalMiddleZone(false);		// on enter, wait()
+//					array.resetMiddleReverse();
+//				}
+				
+				/*else*/ if( array.arr[i] < array.arr[i - 1] )
 				{
 					// swap
-					int temp = arr[len - 1 - i];
-					arr[len - 1 - i] = arr[len - 2 - i];
-					arr[len - 2 - i] = temp;
+					array.swapPair(i, i - 1);
 					swap = true;
 					++swapes;
 				}
 			}
-			++init;		// for each pass, last number is sortered [,,max->,,] AQUI SE JODE
+			
+//			array.enterCriticalFinalZone(false);
+//			array.resetFinalReverse();
+			
+//			--init;
+			++end;
+			
 			++iterations;
 		}while(swap == true);
 		
-		// Save sorted array
-		sortedArray = new int[arr.length];
-		System.arraycopy(arr, 0, sortedArray, 0, arr.length);
+		System.out.println("Iter reverse: " + (iterations ));
+		System.out.println("Swapes reverse: " + (swapes ));
 	}
 	
 	
 	@Override
 	public void run()
 	{
+		// Divide arr in two parts
 		
+//		if(originalArray.length %2 ==0)	// Even
+//		{
+			try {
+				if(dir == directionType.FORWARD)
+					forwardSort();
+				else if(dir == directionType.REVERSE)
+					reverseSort();
+			} catch (InterruptedException ex) {
+				Logger.getLogger(BubbleSort.class.getName()).log(Level.SEVERE, null, ex);
+			}
+//		}
 	}
-	
-	void bubbleSort2()		// variant without checking sorting
-    {
-		iterations = 0; swapes = 0;
-		// Save unsorted array
-		originalArray = new int[arr.length];
-		System.arraycopy(arr, 0, originalArray, 0, arr.length);
 		
-        int n = arr.length;
-        for (int i = 0; i < n-1; i++)
-		{
-            for (int j = 0; j < n-i-1; j++)
-                if (arr[j] > arr[j+1])
-                {
-                    // swap arr[j+1] and arr[j]
-                    int temp = arr[j];
-                    arr[j] = arr[j+1];
-                    arr[j+1] = temp;
-					++swapes;
-                }
-			++iterations;
-		}
-		
-		// Save sorted array
-		sortedArray = new int[arr.length];
-		System.arraycopy(arr, 0, sortedArray, 0, arr.length);
-    }
-	
-	public void printSortedArray()
+	public void printSortedArray()	// DELETE
 	{
 		System.out.print("\n[");
 		for (int i = 0; i < sortedArray.length - 1; ++i)
@@ -151,18 +312,37 @@ public class BubbleSort extends Thread
 		System.out.println("Iterations: " + iterations + " (" + swapes + " swapes)");
 	}
 	
+	
+	
 	public static void test()
 	{
-		BubbleSort bubble = new BubbleSort(new int[]{3,1,2},directionType.FORWARD);
+		ArrayToSort arrayObj = new ArrayToSort(new int[]{6,5,4,3,2,1});
+//		ArrayToSort arrayObj = new ArrayToSort(new int[]{22,3});
+//		BubbleSort forwardThread = new BubbleSort(arrayObj, directionType.FORWARD);
+		BubbleSort reverseThread = new BubbleSort(arrayObj, directionType.REVERSE);
 		
-		bubble.bubbleSort();
-		bubble.printSortedArray();
+		reverseThread.start();
+//		forwardThread.start();
+		
+		
+		
+		try
+		{
+//			forwardThread.join();
+			reverseThread.join();
+			arrayObj.print();
+			
+//		reverseThread.start();
+		
+//		bubble.printSortedArray();
 		
 //		bubble.bubbleSortRev(new int[]{45,88,2,5,12,5,3,7,8,9,2,22,34,8,2,5,20,56,5,5,5,5,5,2});
 //		bubble.printSortedArray();
 //		
 //		bubble.bubbleSortRev(new int[]{5,3,1,9,8,2,4,7});
 //		bubble.printSortedArray();
+		} catch (InterruptedException ex) {
+			Logger.getLogger(BubbleSort.class.getName()).log(Level.SEVERE, null, ex);
+		}
 	}
-	
 }

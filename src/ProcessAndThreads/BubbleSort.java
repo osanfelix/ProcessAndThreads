@@ -219,6 +219,7 @@ public class BubbleSort extends Thread
 //					array.exitCriticalZone();		// on exit, notify()
 //					array.resetMiddleForward();
 //				}
+//				sleep(1);
 			}
 			
 //			if(swap) array.enterCriticalFinalZone(true);
@@ -266,6 +267,7 @@ public class BubbleSort extends Thread
 					swap = true;
 					++swapes;
 				}
+//				sleep(1);
 			}
 			
 //			array.enterCriticalFinalZone(false);
@@ -312,23 +314,34 @@ public class BubbleSort extends Thread
 		System.out.println("Iterations: " + iterations + " (" + swapes + " swapes)");
 	}
 	
-	
+	private static int [] createArray(int ARRAY_SIZE)
+	{
+        int[] ret = new int[ARRAY_SIZE];
+        for(int i=0; i<ARRAY_SIZE; i++){
+//            ret[i] = (int) (Math.random() + 1);
+			  ret[i] = ARRAY_SIZE - i - 1;
+        }
+		
+        return ret;
+    }
 	
 	public static void test()
 	{
-		ArrayToSort arrayObj = new ArrayToSort(new int[]{6,5,4,3,2,1});
-//		ArrayToSort arrayObj = new ArrayToSort(new int[]{22,3});
-//		BubbleSort forwardThread = new BubbleSort(arrayObj, directionType.FORWARD);
+//		ArrayToSort arrayObj = new ArrayToSort(new int[]{20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0});
+		ArrayToSort arrayObj = new ArrayToSort(createArray(50));
+		BubbleSort forwardThread = new BubbleSort(arrayObj, directionType.FORWARD);
 		BubbleSort reverseThread = new BubbleSort(arrayObj, directionType.REVERSE);
 		
 		reverseThread.start();
-//		forwardThread.start();
+		forwardThread.start();
+		
+		
 		
 		
 		
 		try
 		{
-//			forwardThread.join();
+			forwardThread.join();
 			reverseThread.join();
 			arrayObj.print();
 			

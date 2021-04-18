@@ -1,5 +1,5 @@
 
-// Bubble sort implememntation (int)
+// Original Bubble sort implememntation (int)
 // Max complexity O(n^2).
 
 // Activity: Two threads for ordering an array. One of them starts from the
@@ -9,19 +9,16 @@
 
 package ProcessAndThreads;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 class ArrayToSort
 {
 	public int[] arr;
 	int len;
 	
 	// Threading vars
-	static volatile boolean finish_middle_forward = false;
-	static volatile boolean finish_middle_reverse = false;
-	static volatile boolean finish_forward = false;
-	static volatile boolean finish_reverse = false;
+	static boolean finish_middle_forward = false;
+	static boolean finish_middle_reverse = false;
+	static boolean finish_forward = false;
+	static boolean finish_reverse = false;
 
 	public void resetMiddleForward()
 	{
@@ -43,14 +40,16 @@ class ArrayToSort
 		finish_reverse = false;
 	}
 	
-	public void endForward()
+	public synchronized void endForward()
 	{
+		notify();	// Necessary when reverse thread needs more iterations than forward one
 		finish_forward = true;
 		finish_middle_forward = true;
 	}
 	
-	public void endReverse()
+	public synchronized void endReverse()
 	{
+		notify();	// Necessary when forward thread needs more iterations than reverse one
 		finish_reverse = true;
 		finish_middle_reverse = true;
 	}
@@ -75,28 +74,15 @@ class ArrayToSort
 	{
 		if(forward)
 		{
-			System.out.println("FORWARD MIDDLE ENTERING...");
 			if (!finish_middle_reverse)
-			{
-				System.out.println("DUERME FORWARD...");wait();
-				System.out.println("DESPIERTA FORWARD...");
-			}
-			
+				wait();	
 		}
 		else
 		{
-			System.out.println("RESERVE MIDDLE ENTERING...");
 			finish_middle_reverse = true;
 			notify();
-			if (!finish_middle_forward)
-			{
-				System.out.println("DUERME REVERSE...");wait();	// Siempre entrará
-				System.out.println("DESPIERTA REVERSE...");
-			}
-			else		// ENTRARA AQUI?? NO CREC
-			{
-				notify();
-			}
+			if (!finish_middle_forward)		// Enter here if forward thread finished totally.
+				wait();	// Always enter...
 		}
 	}
 	
@@ -104,38 +90,20 @@ class ArrayToSort
 	{
 		if(forward)
 		{
-			System.out.println("FORWARD FINAL ENTERING...");
 			finish_forward = true;
-			if (!finish_reverse)
-			{
-				System.out.println("DUERME FORWARD FINAL...");wait();
-			}
-			else
-			{
-				notify();
-			}
+			if (!finish_reverse)	wait();
+			else					notify();
 		}
 		else
 		{
-			System.out.println("REVERSE FINAL ENTERING...");
 			finish_reverse = true;
-			if (!finish_forward)
-			{
-				System.out.println("DUERME REVERSE FINAL...");wait();	
-			}
-			else
-			{
-				notify();
-			}
+			if (!finish_forward)	wait();	
+			else					notify();
 		}
 	}
 	
 	public synchronized void exitCriticalZone() throws InterruptedException	// only forward
 	{
-		if (!finish_middle_reverse)
-		{
-			System.err.println("NEVER ENTERING HERE...");
-		}
 		finish_middle_forward = true;
 		notify();
 	}
@@ -146,8 +114,6 @@ class ArrayToSort
 		int temp = arr[i];
 		arr[i] = arr[j];
 		arr[j] = temp;
-		
-		// Half part of the array: critical place
 	}
 	
 	public void print()
@@ -159,7 +125,6 @@ class ArrayToSort
 		}
 		System.out.print(arr[arr.length - 1]);
 		System.out.print("]\n");
-//		System.out.println("Iterations: " + iterations + " (" + swapes + " swapes)");
 	}
 }
 
@@ -171,10 +136,6 @@ public class BubbleSort extends Thread
 	ArrayToSort array = null;
 	
 	directionType dir;
-	
-	//  VARS
-	int[] originalArray = null;
-	int[] sortedArray = null;
 	
 	// TEMP VARS
 	int iterations = 0;
@@ -189,7 +150,7 @@ public class BubbleSort extends Thread
 	// Constructor
 	BubbleSort(ArrayToSort array, directionType dir)
 	{
-		super();
+		super(dir.toString());
 		this.array = array;
 		this.dir = dir;
 	}
@@ -203,7 +164,7 @@ public class BubbleSort extends Thread
 		
 		int init = 0;
 		int end = len -1;
-		boolean swap = false;
+		boolean swap;
 		do
 		{
 			swap = false;
@@ -213,9 +174,7 @@ public class BubbleSort extends Thread
 				// CASO PAR
 				// Stop if get to the half
 				if(i == len/2 -1)
-				{
 					array.enterCriticalMiddleZone(true);		// on enter, wait()
-				}
 				
 				if( array.getValue(i) > array.getValue(i+1) )
 				{
@@ -228,10 +187,11 @@ public class BubbleSort extends Thread
 				if(i == len/2 -1)
 				{
 					array.exitCriticalZone();		// on exit, notify()
+					array.resetMiddleForward();
 				}
 //				sleep(1);
 			}
-			array.resetMiddleForward();
+			
 			if(init < end)	array.enterCriticalFinalZone(true);
 			array.resetFinalForward();
 			
@@ -265,26 +225,22 @@ public class BubbleSort extends Thread
 			swap = false;
 			
 			for(int i = init; i > end; --i)
-			{
-				// CASO PAR
-				// Stop if get to the half
+			{				// Stop if get to the half
 				if(i == len/2)
 				{
  					array.enterCriticalMiddleZone(false);		// on enter, wait()
+					array.resetMiddleReverse();
 				}
 				
-				/*else*/ if( array.arr[i] < array.arr[i - 1] )
+				else if( array.arr[i] < array.arr[i - 1] )
 				{
-					// swap
 					array.swapPair(i, i - 1);
 					swap = true;
 					++swapes;
 				}
 //				sleep(1);
 			}
-			array.resetMiddleReverse();
-			if(init > end)
-				array.enterCriticalFinalZone(false);
+			array.enterCriticalFinalZone(false);
 			array.resetFinalReverse();
 
 			--init;
@@ -305,37 +261,25 @@ public class BubbleSort extends Thread
 	{
 		// Divide arr in two parts
 		
-		if(array.getLength() %2 ==0)	// Even
-		{
-			try {
-				if(dir == directionType.FORWARD)
-					forwardSort();
-				else if(dir == directionType.REVERSE)
-					reverseSort();
-			} catch (InterruptedException ex) {
-				Logger.getLogger(BubbleSort.class.getName()).log(Level.SEVERE, null, ex);
-			}
+//		if(array.getLength() %2 ==0) {	// Even. YOU CAN DELETE THIS CONDITION
+										// THIS ALSO WORKS WITH ODD ARRAYS	
+		try {
+			if(dir == directionType.FORWARD)
+				forwardSort();
+			else if(dir == directionType.REVERSE)
+				reverseSort();
+		} catch (InterruptedException ex) {
+			System.err.println("Thread " + dir + " interromput: " + ex);
 		}
-	}
-		
-	public void printSortedArray()	// DELETE
-	{
-		System.out.print("\n[");
-		for (int i = 0; i < sortedArray.length - 1; ++i)
-		{
-			System.out.print(sortedArray[i] + ",");
-		}
-		System.out.print(sortedArray[sortedArray.length - 1]);
-		System.out.print("]\n");
-		System.out.println("Iterations: " + iterations + " (" + swapes + " swapes)");
+//	}
 	}
 	
 	private static int [] createArray(int ARRAY_SIZE)
 	{
         int[] ret = new int[ARRAY_SIZE];
         for(int i=0; i<ARRAY_SIZE; i++){
-//            ret[i] = (int) (Math.random() + 1);
-			  ret[i] = ARRAY_SIZE - i - 1;
+            ret[i] = (int) (100*(Math.random()*2 - 1));
+//			  ret[i] = ARRAY_SIZE - i - 1;
         }
 		
         return ret;
@@ -343,18 +287,20 @@ public class BubbleSort extends Thread
 	
 	public static void test()
 	{
-//		ArrayToSort arrayObj = new ArrayToSort(new int[]{20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0});
-		ArrayToSort arrayObj = new ArrayToSort(createArray(50000));
-//		ArrayToSort arrayObj = new ArrayToSort(new int[]{6,5,4,3,2,1});
+//		ArrayToSort arrayObj = new ArrayToSort(new int[]{2,9,4,8,5,3});
+		ArrayToSort arrayObj = new ArrayToSort(createArray(60000));
+		
+		System.out.println("Original Array:");
+		arrayObj.print();
+		
 		BubbleSort forwardThread = new BubbleSort(arrayObj, directionType.FORWARD);
 		BubbleSort reverseThread = new BubbleSort(arrayObj, directionType.REVERSE);
-		
-		
-		
-		
-		reverseThread.start();
+
+		forwardThread.setPriority(MAX_PRIORITY);
+		reverseThread.setPriority(MAX_PRIORITY);
+				
 		forwardThread.start();
-		
+		reverseThread.start();
 		
 		try
 		{
@@ -362,17 +308,8 @@ public class BubbleSort extends Thread
 			reverseThread.join();
 			arrayObj.print();
 			
-//		reverseThread.start();
-		
-//		bubble.printSortedArray();
-		
-//		bubble.bubbleSortRev(new int[]{45,88,2,5,12,5,3,7,8,9,2,22,34,8,2,5,20,56,5,5,5,5,5,2});
-//		bubble.printSortedArray();
-//		
-//		bubble.bubbleSortRev(new int[]{5,3,1,9,8,2,4,7});
-//		bubble.printSortedArray();
 		} catch (InterruptedException ex) {
-			Logger.getLogger(BubbleSort.class.getName()).log(Level.SEVERE, null, ex);
+			System.err.println("Thread/s interromput/s: " + ex);
 		}
 	}
 }

@@ -2,12 +2,73 @@ package ProcessAndThreads;
 // Modificadors:
 // 'synchronized'  => Per mètodes i blocs
 
+import static java.lang.Thread.sleep;
+
+
 
 // 'volatile' per membres d'una clase.
 
 
 public class ThreadSynchronicityExamples
 {
+	
+	static class objeto
+	{
+		public volatile boolean lock = true;
+		
+		public synchronized int aDormir() throws InterruptedException
+		{
+//			synchronized(this)
+//			{
+				System.out.println("A DORMIR!!");
+//				wait();
+				while(lock)
+				{
+					
+				}
+				System.out.println("LIBRE!!!");
+				return 0;
+//			}
+		}
+		
+		public synchronized int aJugar()
+		{
+//			synchronized(this)
+//			{
+				System.out.println("YEAHH");
+				lock = false;
+//				notify();
+				return 0;
+//			}
+		}
+	}
+	
+	public static void lockerExample()
+	{
+		objeto obj = new objeto();
+		
+		Thread t1 = new Thread( () -> {
+			try {
+				obj.aDormir();
+//				sleep(500);
+			} catch (InterruptedException ex) {
+				System.out.println("Interromput");
+			}
+			
+		});
+		
+		Thread t2 = new Thread( () -> {
+			try {
+				sleep(500);
+				obj.aJugar();
+			} catch (InterruptedException ex) {
+				System.out.println("Interromput");
+			}
+		});
+		
+		t1.start();
+		t2.start();
+	}
 	
 	static class CustomCounterZerosThreadFromArray extends Thread
 	{
@@ -32,7 +93,7 @@ public class ThreadSynchronicityExamples
 					// UNCOMMENT WHAT YOU WANT TO TEST
 //					foundedZeros++;								// Attack shared variable without lockers. DISASTER!
 //					countZero();								// although synchronized, each thread calls its own method (bya bye synchronicity) DISASTER!
-					ThreadSynchronicityExamples.countZero();	// Synchronized method to count zeros. All threads call the same method. WORKS!
+					ThreadSynchronicityExamples.countZero();	// Synchronized static method to count zeros. All threads call the same method. WORKS!
 				}
 			}
 		}
@@ -99,5 +160,4 @@ public class ThreadSynchronicityExamples
 		System.out.println("Inserted zeros: " + zerosCount);
         return ret;
     }
-	
 }

@@ -1,3 +1,9 @@
+
+// ExecutorService executes tasks:
+// Methods:	.submit(Callable)
+//			.invokeAll(Collection of Callables)
+//			.execute(Runnable)
+
 package ProcessAndThreads;
 
 import static java.lang.Thread.sleep;
@@ -13,8 +19,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 // Callable Task
 class MultiplyOp implements Callable<Integer>

@@ -86,17 +86,22 @@ private List<ForkJoinExampleFindMaxShort> getMaxReqList()
     public static void test(){
 		taskCount = 1;
         short[] data = createArray(200000000);
-        // Mira el número de processadors
-        System.out.println("Inici càlcul");
-        ForkJoinPool pool = new ForkJoinPool();
-
-        int inici	= 0;
+        
+// Mira el número de processadors
+		int processadors = Runtime.getRuntime().availableProcessors();
+		System.out.println("Num de processadors: " + processadors);
+        
+		System.out.println("Inici càlcul");
+        ForkJoinPool pool = new ForkJoinPool(processadors);		// ForkJoinPool() do the same...
+		
+		int inici	= 0;
         int fi		= data.length;
         
 		// Creamos la tarea
 		ForkJoinExampleFindMaxShort tasca = new ForkJoinExampleFindMaxShort(data, inici, fi);
         
         long time = System.currentTimeMillis();
+		
 		
         // crida la tasca i espera que es completin
 		int result = pool.invoke(tasca);

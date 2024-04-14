@@ -36,18 +36,19 @@ public class MainApp
 //		TestSchedulePool();
 		
 		// Fork - Join example
-//		ForkJoinExampleFindMaxShort.test();
+		ForkJoinExampleFindMaxShort.test();
 		// Thread example
 //		TestThread();
 //		TestRunnable();
 		
 		// Synchronized exemples				
 //		ThreadSynchronicityExamples.threadsFoundZerosOnArray();		// To modify shared vrible by serveral threads
+//		ThreadSynchronicityExamples.lockerExample();
 		
 //		WaitNotifyExample.test();
 		
 		// Sorting
-		BubbleSort.test();
+//		BubbleSort.test();
 		
 	}
 	
